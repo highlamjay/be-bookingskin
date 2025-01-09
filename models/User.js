@@ -27,6 +27,10 @@ const UserSchema = new mongoose.Schema({
         enum: ['user', 'admin'], //allow user or admin roles
         default: 'user',
     }, 
+    isVerified: {
+        type: Boolean,
+        default: false  
+    }
 },
 {
     timestamps: true,
