@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const {uploadToCloudinary} = require('../helpers/cloudinaryHelper')
 
 //register controller
 const registerUser = async (req, res, next) => {
@@ -114,7 +115,157 @@ const loginUser = async (req, res) => {
     }
 };
 
+//change password controller
+const changePasswordUser = async (req, res) => {
+    try {
+        const { password, newPassword, confirmPassword} = req.body;
+        const userId = req.params.id;
+
+        //check user exist
+        const user = await User.findById(userId);
+
+        if(!user){
+            return res.status(400).json({
+                success: false,
+                message: 'User not found ! Please try again !'
+            })
+        }
+
+        //check password
+        const checkPassword = await bcrypt.compare(password, user.password);
+
+        if(!checkPassword){
+            return res.status(400).json({
+                success: false,
+                message: 'Current password is incorrect ! Please try again !'
+            })
+        }
+
+        //check new password with confirm password
+        const checkNewPassword = newPassword === confirmPassword;
+
+        if(!checkNewPassword){
+            return res.status(400).json({
+                success: false,
+                message: 'New password and confirm password do not match ! Please try again !'
+            })
+        }
+
+        //hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(newPassword, salt);
+
+        //update password
+        await User.findByIdAndUpdate(
+            userId, 
+            {password: hashPassword},
+            {new: true}
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Password changed successfully !'
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error ! Please try again !'
+        })
+    }
+};
+
+//fetch detail controller
+const fetchDetailUser = async (req, res) => {
+    try {
+        const ussrId = req.params.id;
+
+        //check user exist
+        const user = await User.findById(ussrId);
+
+        if(!user){
+            return res.status(400).json({
+                success: false,
+                message: 'User not found ! Please try again !'
+            })
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'User found !',
+            data: user
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error ! Please try again !'
+        })
+    }
+}
+
+//fetch all user 
+const fetchAllUser = async (req, res) => {
+    try {
+        const users = await User.find();
+        if(!users){
+            return res.status(400).json({
+                success: false,
+                message: 'Users not found ! Please try again !'
+            })
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Users found !',
+            data: users
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error ! Please try again !'
+        })
+    }
+}
+
+//upload avatar user
+const uploadAvatarUser = async (req, res) => {
+    try {
+        //check if file is missing in req object
+        if(!req.file){
+            return res.status(400).json({
+                success: false,
+                message: 'File not found ! Please try again !'
+            })
+        }
+
+        const url = await uploadToCloudinary(req.file.path)
+
+        const user = await User.findById(req.user.id);
+
+        user.image = url;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Avatar uploaded successfully !',
+            data: user
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error ! Please try again !'
+        })
+    }
+}
+
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    changePasswordUser,
+    fetchDetailUser,
+    fetchAllUser,
+    uploadAvatarUser
 }
