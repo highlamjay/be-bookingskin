@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Image = require('../models/Image');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {uploadToCloudinary} = require('../helpers/cloudinaryHelper')
@@ -91,13 +92,29 @@ const loginUser = async (req, res) => {
             })
         }
 
-        //create token
+        //create access token
         const token = jwt.sign({
             id: user._id, 
             username: user.username, 
             role: user.role
         }, process.env.JWT_SECRET, {
             expiresIn: '15m'
+        });
+
+        //create refresh token
+        const refreshToken = jwt.sign({
+            id: user._id,
+            username: user.username,
+            role: user.role
+        }, process.env.JWT_REFRESH_SECRET, {
+            expiresIn: '7d'
+        });
+
+        //sace refresh token in cookie
+        res.cookie("refresh_token", refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "strict",
         });
 
         res.status(200).json({
@@ -113,6 +130,21 @@ const loginUser = async (req, res) => {
             message: 'Internal server error ! Please try again !'
         })
     }
+};
+
+//logout controller
+const logoutUser = async (req, res) => {
+  try {
+    res.clearCookie("refresh_token");
+    return res.status(200).json({
+      success: true,
+      message: "Logout successfully",
+    });
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
 };
 
 //change password controller
@@ -239,8 +271,18 @@ const uploadAvatarUser = async (req, res) => {
             })
         }
 
-        const url = await uploadToCloudinary(req.file.path)
+        const {url, publicId}= await uploadToCloudinary(req.file.path)
 
+        //create new image in db
+        const newImage = new Image({
+            url,
+            publicId,
+            uploadBy: req.user.id
+        })
+
+        await newImage.save();
+
+        //update image in user
         const user = await User.findById(req.user.id);
 
         user.image = url;
@@ -264,6 +306,7 @@ const uploadAvatarUser = async (req, res) => {
 module.exports = {
     registerUser,
     loginUser,
+    logoutUser,
     changePasswordUser,
     fetchDetailUser,
     fetchAllUser,
