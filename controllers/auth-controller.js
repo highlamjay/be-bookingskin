@@ -70,10 +70,10 @@ const registerUser = async (req, res, next) => {
 //login controller
 const loginUser = async (req, res) => {
     try {
-        const {username, password} = req.body;
-
+        const {email, password} = req.body;
+        
         //check user exist
-        const user = await User.findOne({username});
+        const user = await User.findOne({email});
 
         if(!user || !user.isVerified){
             return res.status(400).json({
