@@ -1,4 +1,4 @@
-const User = require("../models/user");
+const User = require("../models/User");
 const Verification = require("../models/Verification");
 const nodemailer = require("nodemailer");
 
