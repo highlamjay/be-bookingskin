@@ -200,8 +200,9 @@ const forgotPasswordUser = async (req, res) => {
         const { newPassword, confirmPassword} = req.body;
         const email = req.query.email;
 
+        console.log(newPassword, confirmPassword)
         //check user exist
-        const user = await User.findById(email);
+        const user = await User.findOne({email: email});
 
         if(!user){
             return res.status(400).json({
@@ -226,7 +227,7 @@ const forgotPasswordUser = async (req, res) => {
 
         //update password
         await User.findByIdAndUpdate(
-            userId, 
+            user._id, 
             {password: hashPassword},
             {new: true}
         );
