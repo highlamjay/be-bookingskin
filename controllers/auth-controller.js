@@ -7,7 +7,7 @@ const {uploadToCloudinary} = require('../helpers/cloudinaryHelper')
 //register controller
 const registerUser = async (req, res, next) => {
     try {
-        const {username, email, password, confirmPassword, role} = req.body;
+        const {name, username, email, password, confirmPassword, role} = req.body;
         
         //check user exist
         const checkExistingUser = await User.findOne({$or: [{username}, {email}]});
@@ -35,6 +35,7 @@ const registerUser = async (req, res, next) => {
 
         //create new user
         const newlyCreatedUser = new User({
+            name,
             username,
             email,
             password: hashPassword,
@@ -43,21 +44,7 @@ const registerUser = async (req, res, next) => {
 
         await newlyCreatedUser.save();
 
-
         next();
-        // if(newlyCreatedUser){
-        //     return res.status(200).json({
-        //         success: true,
-        //         message: 'User created successfully !',
-        //         data: newlyCreatedUser
-        //     })
-        // } else {
-        //     return res.status(400).json({
-        //         success: false,
-        //         message: 'Unable to register user ! Please try again !',
-        //         data: newlyCreatedUser
-        //     })
-        // }
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -207,6 +194,56 @@ const changePasswordUser = async (req, res) => {
     }
 };
 
+//forgot password controller
+const forgotPasswordUser = async (req, res) => {
+    try {
+        const { newPassword, confirmPassword} = req.body;
+        const email = req.query.email;
+
+        //check user exist
+        const user = await User.findById(email);
+
+        if(!user){
+            return res.status(400).json({
+                success: false,
+                message: 'User not found ! Please try again !'
+            })
+        }
+
+        //check new password with confirm password
+        const checkNewPassword = newPassword === confirmPassword;
+
+        if(!checkNewPassword){
+            return res.status(400).json({
+                success: false,
+                message: 'New password and confirm password do not match ! Please try again !'
+            })
+        }
+
+        //hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(newPassword, salt);
+
+        //update password
+        await User.findByIdAndUpdate(
+            userId, 
+            {password: hashPassword},
+            {new: true}
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Password changed successfully !'
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error ! Please try again !'
+        })
+    }
+};
+
 //fetch detail controller
 const fetchDetailUser = async (req, res) => {
     try {
@@ -308,6 +345,7 @@ module.exports = {
     loginUser,
     logoutUser,
     changePasswordUser,
+    forgotPasswordUser,
     fetchDetailUser,
     fetchAllUser,
     uploadAvatarUser

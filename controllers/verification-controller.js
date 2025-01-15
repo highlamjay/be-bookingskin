@@ -3,6 +3,7 @@ const Verification = require("../models/Verification");
 const nodemailer = require("nodemailer");
 
 
+// verify code in email with account
 const verifyEmail = async (req, res) => {
     try {
         const { code } = req.body;
@@ -54,6 +55,7 @@ const verifyEmail = async (req, res) => {
     }
 }
 
+// send code controller
 const sendCode = async (req, res) => {
     try {
         const {email} = req.body;
@@ -101,6 +103,7 @@ const sendCode = async (req, res) => {
     }
 }
 
+// send code again controller
 const sendCodeAgain = async (req, res) => {
     try {
         const {email} = req.query;
@@ -151,5 +154,5 @@ const sendCodeAgain = async (req, res) => {
 module.exports = {
     verifyEmail, 
     sendCode,
-    sendCodeAgain
+    sendCodeAgain,
 }

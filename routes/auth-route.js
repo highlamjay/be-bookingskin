@@ -5,6 +5,7 @@ const {
     registerUser, 
     loginUser, 
     changePasswordUser, 
+    forgotPasswordUser,
     fetchDetailUser, 
     fetchAllUser,
     uploadAvatarUser,
@@ -19,6 +20,7 @@ const uploadMiddleware = require('../middlewares/upload-middleware');
 router.post('/register', registerUser, sendCode)
 router.post('/login', loginUser)
 router.post('/change-password/:id', authMiddleware, changePasswordUser)
+router.post('/forgot-password', forgotPasswordUser)
 router.get('/fetch-detail/:id', authMiddleware, fetchDetailUser)
 router.get('/fetch-all', authMiddleware, adminMiddleware, fetchAllUser)
 router.put('/upload-image', authMiddleware, uploadMiddleware.single('image'), uploadAvatarUser)
