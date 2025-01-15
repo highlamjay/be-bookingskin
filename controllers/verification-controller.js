@@ -106,7 +106,7 @@ const sendCode = async (req, res) => {
 // send code again controller
 const sendCodeAgain = async (req, res) => {
     try {
-        const {email} = req.query;
+        const {email} = req.query.email;
 
         //create code
         const createdCode = Math.floor(
