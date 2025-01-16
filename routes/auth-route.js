@@ -9,7 +9,8 @@ const {
     fetchDetailUser, 
     fetchAllUser,
     uploadAvatarUser,
-    logoutUser
+    logoutUser,
+    refreshToken
 } = require('../controllers/auth-controller')
 
 const {sendCode} = require('../controllers/verification-controller');
@@ -24,6 +25,7 @@ router.post('/forgot-password', forgotPasswordUser)
 router.get('/fetch-detail/:id', authMiddleware, fetchDetailUser)
 router.get('/fetch-all', authMiddleware, adminMiddleware, fetchAllUser)
 router.put('/upload-image', authMiddleware, uploadMiddleware.single('image'), uploadAvatarUser)
-router.post('/log-out', authMiddleware, logoutUser)
+router.post('/log-out', logoutUser)
+router.post("/refresh-token", refreshToken);
 
 module.exports = router;

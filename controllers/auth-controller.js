@@ -101,7 +101,7 @@ const loginUser = async (req, res) => {
         res.cookie("refresh_token", refreshToken, {
             httpOnly: true,
             secure: false,
-            sameSite: "strict",
+            sameSite: "lax",
         });
 
         res.status(200).json({
@@ -341,6 +341,49 @@ const uploadAvatarUser = async (req, res) => {
     }
 }
 
+const refreshToken = async (req, res) => {
+    try {
+        const token = req.cookies.refresh_token;
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                message: "Refresh token is required",
+            });
+        }
+
+        jwt.verify(token, process.env.JWT_REFRESH_TOKEN, (err, user) => {
+            if (err) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Invalid or expired refresh token",
+                });
+            }
+
+            const newAccessToken = jwt.sign(
+                {
+                    id: user._id,
+                    username: user.username,
+                    role: user.role,
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: "15m" }
+            );
+
+            return res.status(200).json({
+                success: true,
+                accessToken: newAccessToken,
+                message: "Access token refreshed successfully",
+            });
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
@@ -349,5 +392,6 @@ module.exports = {
     forgotPasswordUser,
     fetchDetailUser,
     fetchAllUser,
-    uploadAvatarUser
+    uploadAvatarUser,
+    refreshToken
 }
