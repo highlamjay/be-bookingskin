@@ -13,17 +13,13 @@ const UserSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: [true, 'Email is required'],
+        required: true,
         unique: true,
-        lowercase: true,
-        match: [/.+\@.+\..+/, 'Please provide a valid email address']
     },
     password: {
         type: String,
         required: true,
         trim: true,
-        minlength: 8,
-        match: [/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/, 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character']
     },
     role: {
         type: String,

@@ -19,6 +19,22 @@ const registerUser = async (req, res, next) => {
             })
         }
 
+        // Validate username length
+        if (!username || username.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: 'Username must be at least 6 characters long!'
+            });
+        }
+
+        // Validate password length
+        if (!password || password.length < 8) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password must be at least 8 characters long!'
+            });
+        }
+
         //check password with confirm password
         const checkPassword = password === confirmPassword;
 
@@ -341,6 +357,7 @@ const uploadAvatarUser = async (req, res) => {
     }
 }
 
+//refresh token controller
 const refreshToken = async (req, res) => {
     try {
         const token = req.cookies.refresh_token;
