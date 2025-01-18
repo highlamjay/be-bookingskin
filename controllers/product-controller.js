@@ -4,7 +4,17 @@ const Product = require('../models/Product')
 //create product controller
 const createProduct = async (req, res) => {
     try {
-        const { name, imagePath, price, description, videoPath } = req.body;
+        const { name, price, description } = req.body;
+
+        const imageFile = req.files?.image; // Nếu sử dụng `multer` để upload với nhiều files
+        const videoFile = req.files?.video;
+
+        if (!imageFile || !videoFile) {
+        return res.status(400).json({
+            success: false,
+            message: 'Image and video files are required!',
+        });
+        }
 
         //check product exist
         const product = await Product.findOne({name});
@@ -16,10 +26,10 @@ const createProduct = async (req, res) => {
         }
         
         // upload image to Cloudinary
-        const imageUploadResult = await uploadToCloudinary(imagePath);
+        const imageUploadResult = await uploadToCloudinary(imageFile.path);
 
         // upload video to Cloudinary
-        const videoUploadResult = await uploadVideoToCloudinary(videoPath);
+        const videoUploadResult = await uploadVideoToCloudinary(videoFile.path);
 
         const newProduct = new Product({
             name,

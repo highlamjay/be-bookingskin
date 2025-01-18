@@ -123,7 +123,8 @@ const loginUser = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'User logged in successfully !',
-            token: token
+            token: token,
+            role: user.role
         })
 
     } catch (error) {
