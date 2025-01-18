@@ -1,9 +1,10 @@
+const { uploadToCloudinary, uploadVideoToCloudinary } = require('../helpers/cloudinaryHelper');
 const Product = require('../models/Product')
 
 //create product controller
 const createProduct = async (req, res) => {
     try {
-        const { name, image, price, description, video } = req.body;
+        const { name, imagePath, price, description, videoPath } = req.body;
 
         //check product exist
         const product = await Product.findOne({name});
@@ -14,14 +15,21 @@ const createProduct = async (req, res) => {
             })
         }
         
+        // upload image to Cloudinary
+        const imageUploadResult = await uploadToCloudinary(imagePath);
+
+        // upload video to Cloudinary
+        const videoUploadResult = await uploadVideoToCloudinary(videoPath);
+
         const newProduct = new Product({
             name,
-            image,
+            image: imageUploadResult.url,
             price,
             description,
-            video,
+            video: videoUploadResult.url,
         })
 
+        //check created product 
         if(!newProduct){
             return res.status(400).json({
                 success: false,
@@ -34,7 +42,7 @@ const createProduct = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Product created successfully"
-        })
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({
